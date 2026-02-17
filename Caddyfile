@@ -1,0 +1,39 @@
+{
+    order webdav before file_server
+}
+
+YOUR_DOMAIN {
+    log {
+        output file /data/logs/access.log {
+            roll_size 10MiB
+            roll_keep 5
+            roll_keep_for 30d
+        }
+        format json
+    }
+
+    route /obsidian/* {
+        uri strip_prefix /obsidian
+
+        basicauth {
+            obsidian YOUR_HASHED_PASSWORD
+        }
+
+        @webdav {
+            method PROPFIND PROPPATCH MKCOL COPY MOVE LOCK UNLOCK
+        }
+        handle @webdav {
+            webdav {
+                root /data/webdav
+            }
+        }
+
+        file_server browse {
+            root /data/webdav
+        }
+    }
+
+    handle /health {
+        respond "OK" 200
+    }
+}
