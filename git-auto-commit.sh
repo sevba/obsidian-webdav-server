@@ -1,8 +1,7 @@
 #!/bin/bash
 
 WEBDAV_DIR="/data/webdav"
-WATCH_INTERVAL=60
-MIN_AGE=30
+WATCH_INTERVAL=30
 AGE_CHECK_FILE="/tmp/age_check"
 LOG_PREFIX="[git-auto-commit]"
 
@@ -37,20 +36,10 @@ fi
 # Create initial reference file
 touch "$AGE_CHECK_FILE"
 
-log "Starting auto-commit watcher (interval: ${WATCH_INTERVAL}s, min age: ${MIN_AGE}s)..."
+log "Starting auto-commit watcher (interval: ${WATCH_INTERVAL}s)..."
 
 while true; do
     sleep $WATCH_INTERVAL
-
-    # Find files modified within last MIN_AGE seconds by comparing with reference file age
-    CURRENT_TIME=$(date +%s)
-    REF_TIME=$(stat -c %Y "$AGE_CHECK_FILE" 2>/dev/null || stat -f %m "$AGE_CHECK_FILE" 2>/dev/null)
-    TIME_DIFF=$((CURRENT_TIME - REF_TIME))
-
-    if [ $TIME_DIFF -lt $MIN_AGE ]; then
-        # Reference file is too new, create a new one
-        touch "$AGE_CHECK_FILE"
-    fi
 
     # Find files modified more recently than reference file
     ACTIVE_FILES=$(find "$WEBDAV_DIR" \
@@ -60,7 +49,9 @@ while true; do
         2>/dev/null | wc -l)
 
     if [ "$ACTIVE_FILES" -gt 0 ]; then
-        log "Skipping commit - $ACTIVE_FILES file(s) modified within last ${MIN_AGE}s"
+        log "Skipping commit - $ACTIVE_FILES file(s) modified within last ${WATCH_INTERVAL}s"
+        # Update reference to advance the window, even when skipping
+        touch "$AGE_CHECK_FILE"
         continue
     fi
 
