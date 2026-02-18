@@ -15,12 +15,12 @@ YOUR_DOMAIN {
     route /obsidian/* {
         uri strip_prefix /obsidian
 
-        basicauth {
+        basic_auth {
             obsidian YOUR_HASHED_PASSWORD
         }
 
         @webdav {
-            method PROPFIND PROPPATCH MKCOL COPY MOVE LOCK UNLOCK
+            method PROPFIND PROPPATCH MKCOL COPY MOVE LOCK UNLOCK PUT DELETE GET HEAD
         }
         handle @webdav {
             webdav {
