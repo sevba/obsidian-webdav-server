@@ -1,6 +1,6 @@
-# Obsidian Sync Server
+# Obsidian Self-Hosted Server
 
-A self-hosted WebDAV server for syncing Obsidian vaults. Includes automatic HTTPS certificate provisioning, version control, and backup functionality. Works with Obsidian desktop and mobile clients using the Remotely Save community plugin.
+A self-hosted WebDAV server for synchronizing your Obsidian vaults between mulltiple devices. Includes automatic HTTPS certificate provisioning, version control, and backup functionality. Works with Obsidian desktop and mobile clients using the Remotely Save community plugin.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ A self-hosted WebDAV server for syncing Obsidian vaults. Includes automatic HTTP
 
 ## Introduction
 
-This project runs a **self-hosted Obsidian vault sync server** on a Docker container, allowing you to sync your local Obsidian vault to a remote server over HTTPS with automatic TSL certificate provisioning and renewal. All file changes are automatically committed to Git on the sync server, providing advanced version history and recovery options.
+This project runs a **self-hosted WebDAV server for syncing your Obsidian vaults** inside a Docker container. All your notes and files are also automatically committed to a local Git repository on the server, providing advanced version history and recovery options.
 
 ### Technology Stack & Rationale
 
@@ -67,14 +67,14 @@ sudo usermod -aG docker $(whoami)  # Allow non-root docker commands
 
 ## Installation & Setup
 
-Before proceeding with the installation, check the prerequisites above. A valid (sub-)domain with proper DNS records resolving to your sync server's IP address is a hard requirement. The automatic certificate provisioning will fail otherwise.
+Before proceeding with the installation, check the prerequisites above. A valid (sub-)domain with proper DNS records resolving to your server's IP address is a hard requirement. The automatic certificate provisioning will fail otherwise.
 
 ### Step 1: Clone the Repository
 
 
 ```bash
-git clone https://github.com/sevba/obsidian-sync-server.git
-cd obsidian-sync-server
+git clone https://github.com/sevba/obsidian-webdav-server.git
+cd obsidian-webdav-server
 ```
 
 This repository contains all the necessary files:
@@ -230,7 +230,7 @@ docker compose exec caddy caddy validate --config /etc/caddy/Caddyfile
 
 ### Check Files in WebDAV Directory
 
-After syncing from Obsidian:
+After syncing from Obsidian using Remotely Save:
 
 ```bash
 docker exec obsidian-caddy ls -la /data/webdav/
@@ -260,7 +260,7 @@ docker compose logs caddy | grep "\[git-auto-commit\]"
 
 ## Maintenance Commands
 
-Below are useful but **optional** commands to view and manage your Obsidian sync server. 
+Below are useful but **optional** commands to view and manage your WebDAV server. 
 
 ### View Container Logs
 
@@ -311,7 +311,7 @@ Create a compressed archive of your vault (for copying to off-site backup server
 
 ```bash
 docker run --rm \
-  -v obsidian-sync-server_caddy_data:/data \
+  -v obsidian-webdav-server_caddy_data:/data \
   -v ~/backups:/backup \
   alpine tar czf /backup/obsidian_backup.tar.gz /data/webdav/
 
@@ -366,7 +366,7 @@ docker exec obsidian-caddy git -C /data/webdav checkout <commit-hash> -- path/to
 docker exec obsidian-caddy git -C /data/webdav diff HEAD
 ```
 
-The restored file's timestamp will be set to the moment you execute the commend, so Remotely Save will consider this version to be the latest and will download it from the sync server to your local Obsidian client (as long as the Action For Conflict setting of Remotely Save is set to "newer version survives" which is the default setting).
+The restored file's timestamp will be set to the moment you execute the commend, so Remotely Save will consider this version to be the latest and will download it from the server to your local Obsidian client (as long as the Action For Conflict setting of Remotely Save is set to "newer version survives" which is the default setting).
 
 ### Full Rollback (Reset to Previous State)
 
@@ -436,7 +436,7 @@ docker compose logs caddy
 
 - **Port already in use**: `docker ps -a` to find conflicting container
   - Solution: Change port mapping in `docker-compose.yml` (e.g., `8443:443`)
-  - Important: Note that Caddy requires port 80 to be open in order to receive the ACME challenges for provisioning HTTPS certificates. I highly recommend the use of ports 80 and 443 for your Obsidian sync server. If these ports are not available, consider requesting your hosting provider to provision an additional public IP address.
+  - Important: Note that Caddy requires port 80 to be open in order to receive the ACME challenges for provisioning HTTPS certificates. I highly recommend the use of ports 80 and 443 for your WebDAV server. If these ports are not available, consider requesting your hosting provider to provision an additional public IP address.
 - **DNS not resolving**: `nslookup YOUR_DOMAIN` returns no result
   - Solution: Wait for DNS propagation (up to 24 hours) or update DNS record
 - **File permissions**: Cannot write to `caddy_data` volume
@@ -478,7 +478,7 @@ docker compose logs caddy | grep -i "acme\|certificate\|let"
 docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile
 ```
 
-### Obsidian Sync Fails
+### Syncing Fails
 
 **Check credentials:**
 
@@ -591,5 +591,4 @@ The `git-auto-commit.sh` script runs continuously in the background:
 
 ---
 
-**Last Updated**: February 2026
-**Version**: 1.0
+**Last Updated**: 2026-02-18
