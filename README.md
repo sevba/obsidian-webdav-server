@@ -555,7 +555,7 @@ Obsidian Client
       └─ /health      → "OK" 200
       ↓
    Git Auto-Commit Watcher (background process)
-      ├─ Every 60 seconds: check for changes
+      ├─ Every 30 seconds: check for changes
       └─ Skip if files modified within last 30 seconds (sync is still ongoing)
 ```
 
@@ -579,16 +579,14 @@ Obsidian Client
 The `git-auto-commit.sh` script runs continuously in the background:
 
 1. **Startup**: Initializes a Git repo in `/data/webdav/` if one doesn't exist
-2. **Loop** (every 60 seconds):
+2. **Loop** (every 30 seconds):
    - Checks for files modified in the last 30 seconds (ignores if active syncs detected to prevent committing partially written files)
    - If no recent activity, stages all changes (`git add -A`)
    - Commits with a timestamped message: `Auto-commit: 2026-02-17 09:42:00`
    - Updates reference timestamp for next cycle
 
 **Key Parameters:**
-- `WATCH_INTERVAL=60` — Check for changes every 60 seconds
-- `MIN_AGE=30` — Ignore files modified within last 30 seconds (still syncing)
-
+- `WATCH_INTERVAL=30` — Check for changes every 30 seconds
 ---
 
 **Last Updated**: 2026-02-18
